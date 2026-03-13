@@ -44,7 +44,10 @@
         item.title = key;
         var parts = key.split('/');
         item.textContent = parts[parts.length - 1];
-        item.addEventListener('click', function () { renderFile(key); });
+        item.addEventListener('click', function () {
+          renderFile(key);
+          document.getElementById('sidebar').classList.add('hidden');
+        });
         items.appendChild(item);
       });
 

@@ -229,11 +229,32 @@ td.explanation-cell em { color: var(--text-dim); }
 
 /* Mobile */
 @media (max-width: 768px) {
-  #sidebar { width: 100%; min-width: 100%; position: absolute; z-index: 10; height: 100%; transform: translateX(-100%); transition: transform 0.2s; }
-  #sidebar.open { transform: translateX(0); }
+  #sidebar { width: 100%; min-width: 100%; position: absolute; z-index: 10; height: 100%; transform: translateX(0); transition: transform 0.2s; }
+  #sidebar.hidden { transform: translateX(-100%); }
   .mobile-toggle { display: block !important; }
   td.explanation-cell { padding-left: 16px; }
+  .sidebar-close { display: block !important; }
 }
+
+.sidebar-close {
+  display: none;
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text);
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 30px;
+  text-align: center;
+  z-index: 11;
+}
+
+.sidebar-close:hover { background: var(--border); }
 
 .mobile-toggle {
   display: none;
@@ -272,13 +293,14 @@ td.explanation-cell em { color: var(--text-dim); }
 <body>
 
 <div id="sidebar">
+  <button class="sidebar-close" onclick="document.getElementById('sidebar').classList.add('hidden')">✕</button>
   <h2>⚡ LEZ Code Explorer</h2>
   <div id="file-tree"></div>
 </div>
 
 <div id="main">
   <div id="file-header">
-    <button class="mobile-toggle" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
+    <button class="mobile-toggle" onclick="document.getElementById('sidebar').classList.remove('hidden')">☰</button>
     <span id="header-content">Select a file to explore</span>
   </div>
   <div class="toolbar" id="toolbar" style="display:none;">
