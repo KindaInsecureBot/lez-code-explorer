@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LEZ Code Explorer</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg: #0d1117;
+  --sidebar-bg: #161b22;
+  --code-bg: #0d1117;
+  --explanation-bg: #1c2333;
+  --border: #30363d;
+  --text: #c9d1d9;
+  --text-dim: #8b949e;
+  --accent: #58a6ff;
+  --accent-dim: #1f6feb;
+  --keyword: #ff7b72;
+  --string: #a5d6ff;
+  --type: #79c0ff;
+  --comment: #8b949e;
+  --function: #d2a8ff;
+  --macro: #ffa657;
+  --number: #79c0ff;
+  --line-hover: #161b22;
+  --line-num: #484f58;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  height: 100vh;
+  display: flex;
+  overflow: hidden;
+}
+
+#sidebar {
+  width: 280px;
+  min-width: 280px;
+  background: var(--sidebar-bg);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+  padding: 16px 0;
+  flex-shrink: 0;
+}
+
+#sidebar h2 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  padding: 0 16px 12px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 8px;
+}
+
+.tree-group {
+  margin-bottom: 4px;
+}
+
+.tree-group-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-dim);
+  padding: 8px 16px 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.tree-group-label:hover { color: var(--text); }
+
+.tree-group-label::before {
+  content: '▾ ';
+  font-size: 10px;
+}
+
+.tree-group.collapsed .tree-group-label::before { content: '▸ '; }
+.tree-group.collapsed .tree-items { display: none; }
+
+.tree-item {
+  font-size: 13px;
+  padding: 4px 16px 4px 28px;
+  cursor: pointer;
+  color: var(--text-dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: background 0.1s;
+}
+
+.tree-item:hover { background: var(--border); color: var(--text); }
+.tree-item.active { background: var(--accent-dim); color: #fff; }
+
+.tree-item::before {
+  content: '📄 ';
+  font-size: 11px;
+}
+
+#main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+#file-header {
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+  color: var(--text-dim);
+  background: var(--sidebar-bg);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+#file-header .path { color: var(--accent); font-family: 'SF Mono', 'Fira Code', monospace; }
+#file-header .desc { color: var(--text-dim); font-style: italic; }
+
+#code-container {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0;
+}
+
+#welcome {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  text-align: center;
+  color: var(--text-dim);
+  padding: 40px;
+}
+
+#welcome h1 { font-size: 24px; color: var(--text); margin-bottom: 12px; }
+#welcome p { font-size: 14px; max-width: 500px; line-height: 1.6; }
+#welcome .hint { margin-top: 16px; font-size: 12px; color: var(--line-num); }
+
+table.code-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+tr.code-line { cursor: pointer; transition: background 0.1s; }
+tr.code-line:hover { background: var(--line-hover); }
+tr.code-line.expanded { background: var(--line-hover); }
+
+td.line-num {
+  width: 50px;
+  min-width: 50px;
+  text-align: right;
+  padding: 0 12px 0 16px;
+  color: var(--line-num);
+  user-select: none;
+  vertical-align: top;
+  border-right: 1px solid var(--border);
+}
+
+td.line-code {
+  padding: 0 16px;
+  white-space: pre;
+  overflow-x: auto;
+}
+
+tr.explanation-row { display: none; }
+tr.explanation-row.visible { display: table-row; }
+
+td.explanation-cell {
+  padding: 12px 16px 12px 78px;
+  background: var(--explanation-bg);
+  border-left: 3px solid var(--accent-dim);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text);
+}
+
+td.explanation-cell code {
+  background: #2d333b;
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: 12px;
+  color: var(--accent);
+}
+
+td.explanation-cell strong { color: var(--macro); }
+td.explanation-cell em { color: var(--text-dim); }
+
+/* Syntax highlighting classes */
+.kw { color: var(--keyword); }
+.ty { color: var(--type); }
+.fn { color: var(--function); }
+.str { color: var(--string); }
+.cm { color: var(--comment); font-style: italic; }
+.mc { color: var(--macro); }
+.num { color: var(--number); }
+.lf { color: var(--text-dim); } /* lifetime */
+
+/* Mobile */
+@media (max-width: 768px) {
+  #sidebar { width: 100%; min-width: 100%; position: absolute; z-index: 10; height: 100%; transform: translateX(-100%); transition: transform 0.2s; }
+  #sidebar.open { transform: translateX(0); }
+  .mobile-toggle { display: block !important; }
+  td.explanation-cell { padding-left: 16px; }
+}
+
+.mobile-toggle {
+  display: none;
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+/* Expand all / collapse all buttons */
+.toolbar {
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.toolbar button {
+  background: var(--sidebar-bg);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  padding: 4px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.1s;
+}
+
+.toolbar button:hover { color: var(--text); border-color: var(--accent-dim); }
+</style>
+</head>
+<body>
+
+<div id="sidebar">
+  <h2>⚡ LEZ Code Explorer</h2>
+  <div id="file-tree"></div>
+</div>
+
+<div id="main">
+  <div id="file-header">
+    <button class="mobile-toggle" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
+    <span id="header-content">Select a file to explore</span>
+  </div>
+  <div class="toolbar" id="toolbar" style="display:none;">
+    <button onclick="expandAll()">Expand All</button>
+    <button onclick="collapseAll()">Collapse All</button>
+  </div>
+  <div id="code-container">
+    <div id="welcome">
+      <div>
+        <h1>LEZ Code Explorer</h1>
+        <p>Interactive code browser for the Logos Execution Zone blockchain programs. Click any file in the sidebar to view its source code.</p>
+        <p class="hint">Click any line of code to see a Python-friendly explanation.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
