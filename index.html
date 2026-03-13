@@ -196,6 +196,27 @@ td.explanation-cell code {
 td.explanation-cell strong { color: var(--macro); }
 td.explanation-cell em { color: var(--text-dim); }
 
+.py-eq {
+  margin-top: 8px;
+  background: #161b22;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 8px 12px;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: 12px;
+  color: #a5d6ff;
+  white-space: pre;
+  overflow-x: auto;
+}
+
+.py-eq::before {
+  content: '# Python equivalent';
+  display: block;
+  color: var(--comment);
+  font-style: italic;
+  margin-bottom: 4px;
+}
+
 /* Syntax highlighting classes */
 .kw { color: var(--keyword); }
 .ty { color: var(--type); }
