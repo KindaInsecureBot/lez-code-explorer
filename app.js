@@ -43,7 +43,8 @@
         item.className = 'tree-item';
         item.title = key;
         var parts = key.split('/');
-        item.textContent = parts[parts.length - 1];
+        // Show subpath from program root (e.g. "core/src/lib.rs" vs "src/lib.rs")
+        item.textContent = parts.slice(1).join('/');
         item.addEventListener('click', function () {
           renderFile(key);
           document.getElementById('sidebar').classList.add('hidden');
