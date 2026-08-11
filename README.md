@@ -1,5 +1,7 @@
 # LEZ Code Explorer
 
+> **Disclaimer:** This is a personal, experimental hobby project. It is not an official Logos product. Not audited.
+
 An interactive, single-page code browser for the **Logos Execution Zone (LEZ)** blockchain programs — the Token Program and the AMM (Automated Market Maker) Program.
 
 Every line of source code is clickable and reveals a Python-friendly explanation of what that line does and why.
